@@ -51,7 +51,7 @@ The API validates input and allowed status changes. Each update and its activity
 
 ## Verify the workflow
 
-Run `python -m unittest -v` from the project folder. The tests use temporary SQLite databases and check the ticket lifecycle, SLA deadlines, requester isolation, and public reply visibility.
+Run `python -m unittest -v` from the project folder. To verify the published demo build, run `python build_pages.py` followed by `node --test test_pages_demo.cjs`. The tests use temporary SQLite databases and check the ticket lifecycle, SLA deadlines, requester isolation, and public reply visibility.
 
 
 ## CI and security

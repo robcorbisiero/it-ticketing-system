@@ -9,6 +9,8 @@ let tickets = [];
 let selectedId;
 let demoAccount = "";
 let session = null;
+let queueRequest = 0;
+let detailRequest = 0;
 
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -123,13 +125,14 @@ function render() {
 
 async function refresh() {
   const activeSession = session;
+  const version = ++queueRequest;
   try {
     const result = await request("");
-    if (session !== activeSession) return;
+    if (session !== activeSession || version !== queueRequest) return;
     tickets = result;
     render();
   } catch (error) {
-    if (session === activeSession) $("#message").textContent = "Could not load the ticket queue. " + error.message;
+    if (session === activeSession && version === queueRequest) $("#message").textContent = "Could not load the ticket queue. " + error.message;
   }
 }
 
@@ -148,6 +151,7 @@ function renderDetail(ticket) {
   const form = $("#detail-form");
   form.elements.assignee.value = ticket.assignee;
   form.elements.note.value = "";
+  form.elements.reply.value = "";
   form.elements.status.replaceChildren(
     ...[ticket.status, ...transitions[ticket.status]].map((status) => element("option", status))
   );
@@ -160,14 +164,15 @@ function renderDetail(ticket) {
 
 async function openTicket(id) {
   const activeSession = session;
+  const version = ++detailRequest;
   try {
     const ticket = await request("/" + id);
-    if (session !== activeSession) return;
+    if (session !== activeSession || version !== detailRequest) return;
     renderDetail(ticket);
     $("#detail-form .error").textContent = "";
     if (!$("#detail-dialog").open) $("#detail-dialog").showModal();
   } catch (error) {
-    if (session === activeSession) $("#message").textContent = error.message;
+    if (session === activeSession && version === detailRequest) $("#message").textContent = error.message;
   }
 }
 
@@ -237,8 +242,13 @@ onSubmit($("#create-form"), async (data) => {
 });
 onSubmit($("#detail-form"), async (data) => {
   if (session?.requester) return;
-  renderDetail(await request("/" + selectedId, "PATCH", data));
-  $("#message").textContent = ticketNumber(selectedId) + " was updated.";
+  const id = selectedId;
+  const activeSession = session;
+  const version = detailRequest;
+  const updated = await request("/" + id, "PATCH", data);
+  if (session !== activeSession) return;
+  if (version === detailRequest && $("#detail-dialog").open) renderDetail(updated);
+  $("#message").textContent = ticketNumber(id) + " was updated.";
 });
 onSubmit($("#login-form"), async ({ account }) => {
   demoAccount = account;
