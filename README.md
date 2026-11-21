@@ -1,6 +1,6 @@
 # Support Desk
 
-**[Try the interactive demo](https://robcorbisiero.github.io/it-ticketing-system/)** · Choose Analyst, Maya, or Noah. Reset restores the fictional queue. All changes stay in your current browser page and disappear on refresh.
+**[Try the interactive demo](https://robcorbisiero.github.io/it-ticketing-system/)** � Choose Analyst, Maya, or Noah. Reset restores the fictional queue. All changes stay in your current browser page and disappear on refresh.
 
 [![Support Desk checks](https://github.com/robcorbisiero/it-ticketing-system/actions/workflows/checks.yml/badge.svg)](https://github.com/robcorbisiero/it-ticketing-system/actions/workflows/checks.yml)
 
@@ -26,8 +26,8 @@ Run `python app.py --demo --port 8092` and open [the demo](http://127.0.0.1:8092
 
 ```mermaid
 flowchart LR
-    UI["Browser · queue and ticket details"] --> API["Python JSON API · access rules and SLA calculation"]
-    API --> DB["SQLite · tickets and activity"]
+    UI["Browser � queue and ticket details"] --> API["Python JSON API � access rules and SLA calculation"]
+    API --> DB["SQLite � tickets and activity"]
 ```
 
 ## SLA policy
@@ -52,3 +52,10 @@ The API validates input and allowed status changes. Each update and its activity
 ## Verify the workflow
 
 Run `python -m unittest -v` from the project folder. The tests use temporary SQLite databases and check the ticket lifecycle, SLA deadlines, requester isolation, and public reply visibility.
+
+
+## CI and security
+
+Pull requests run offline validation with read-only permissions. GitHub Actions dependencies are reviewed through Dependabot. See [security guidance](SECURITY.md).
+
+The local server rejects foreign browser origins and non-local Host headers, limits JSON bodies to 16 KiB, and times out idle connections. This remains a local training application; public demo credentials are not production authentication.

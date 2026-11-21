@@ -17,7 +17,7 @@ class TicketWorkflowTest(unittest.TestCase):
         self.database = Path(tmp.name) / "test.sqlite3"
         initialize(self.database)
 
-    def request(self, method, path, data=None, expected=200, *, demo=False, account=None):
+    def request(self, method, path, data=None, expected=200, *, demo=False, account=None, headers=None):
         request_type = handler(self.database, demo)
         request = request_type.__new__(request_type)
         request.command = method
@@ -27,6 +27,7 @@ class TicketWorkflowTest(unittest.TestCase):
         request.headers = type("Headers", (dict,), {
             "get_content_type": lambda self: "application/json"
         })({"Content-Length": str(len(body))})
+        request.headers.update(headers or {})
         if account:
             token = base64.b64encode(f"{account}:desk-demo".encode()).decode()
             request.headers.update({"Authorization": f"Basic {token}", "X-Support-Desk-Demo": "1"})
@@ -63,6 +64,21 @@ class TicketWorkflowTest(unittest.TestCase):
         self.assertEqual(self.request("GET", "/api/tickets")[0]["id"], ticket["id"])
         self.assertEqual(len(self.request("GET", path)["activity"]), 6)
         self.request("GET", "/api/tickets/999", expected=404)
+
+    def test_reject_cross_origin_and_rebinding(self):
+        self.request("GET", "/api/tickets", expected=401,
+                     headers={"Host": "attacker.example"})
+        self.request("POST", "/api/tickets", {}, expected=401,
+                     headers={"Host": "localhost:8091", "Origin": "https://attacker.example"})
+        self.assertEqual(self.request("GET", "/api/tickets", headers={
+            "Host": "localhost:8091", "Origin": "http://localhost:8091"}), [])
+
+    def test_request_framing(self):
+        for headers in ({"Transfer-Encoding": "chunked"}, {"Content-Length": "20000"},
+                        {"Content-Length": "100"}, {"Content-Length": "invalid"}):
+            with self.subTest(headers=headers):
+                self.request("POST", "/api/tickets", {}, expected=400, headers=headers)
+        self.assertEqual(self.request("GET", "/api/tickets"), [])
 
     def test_static_assets(self):
         self.assertIn(b"Ticket queue", self.request("GET", "/"))
@@ -107,3 +123,4 @@ class TicketWorkflowTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

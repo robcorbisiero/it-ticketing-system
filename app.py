@@ -90,7 +90,7 @@ def ticket_view(row, now=None):
 def field(data, name, limit, required=True):
     value = data.get(name, "")
     if not isinstance(value, str) or len(value.strip()) > limit or (required and not value.strip()):
-        raise ValueError(f"{name.capitalize()} must contain {'1' if required else '0'}–{limit} characters.")
+        raise ValueError(f"{name.capitalize()} must contain {'1' if required else '0'}-{limit} characters.")
     return value.strip()
 
 
@@ -161,16 +161,23 @@ def handler(database, demo=False):
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+            self.send_header("Referrer-Policy", "no-referrer")
             self.end_headers()
             self.wfile.write(body)
 
         def read_json(self):
             if self.headers.get_content_type() != "application/json":
                 raise ValueError("Send an application/json request.")
+            if self.headers.get("Transfer-Encoding"):
+                raise ValueError("Transfer encoding is not supported.")
             size = int(self.headers.get("Content-Length", "0"))
             if not 0 < size <= 16384:
                 raise ValueError("Invalid request size.")
-            data = json.loads(self.rfile.read(size))
+            body = self.rfile.read(size)
+            if len(body) != size:
+                raise ValueError("Incomplete request body.")
+            data = json.loads(body)
             if not isinstance(data, dict):
                 raise ValueError("Expected a JSON object.")
             return data
@@ -197,6 +204,13 @@ def handler(database, demo=False):
                 name, mime = ASSETS[path]
                 return self.send(200, (ROOT / "web" / name).read_bytes(), mime)
             try:
+                # Reject browser requests from other origins, including DNS rebinding hosts.
+                host = self.headers.get("Host", "")
+                if host and urlsplit("//" + host).hostname not in {"127.0.0.1", "localhost", "::1"}:
+                    raise PermissionError("Local host required.")
+                origin = self.headers.get("Origin")
+                if origin and origin != "http://" + host:
+                    raise PermissionError("Same-origin requests required.")
                 requester = self.identity()
                 if path == "/api/session" and self.command == "GET":
                     return self.send(200, {"demo": demo, "requester": requester})
@@ -265,6 +279,13 @@ def seed_demo(path):
                            (ticket_id, "Note: Routed to site support for a queue check."))
 
 
+class LocalHTTPServer(ThreadingHTTPServer):
+    def get_request(self):
+        connection, address = super().get_request()
+        connection.settimeout(10)
+        return connection, address
+
+
 def serve():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8091)
@@ -277,7 +298,7 @@ def serve():
     initialize(database)
     if args.demo:
         seed_demo(database)
-    with ThreadingHTTPServer(("127.0.0.1", args.port), handler(database, args.demo)) as server:
+    with LocalHTTPServer(("127.0.0.1", args.port), handler(database, args.demo)) as server:
         print(f"Support Desk is running at http://127.0.0.1:{args.port}", flush=True)
         try:
             server.serve_forever()
@@ -287,3 +308,4 @@ def serve():
 
 if __name__ == "__main__":
     serve()
+

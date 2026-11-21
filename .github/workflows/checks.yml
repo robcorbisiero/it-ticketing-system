@@ -9,18 +9,29 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Test ticket workflow, SLA, and access rules
         run: python -m unittest -v
       - name: Check browser script syntax
         run: node --check web/app.js
+
+      - name: Build and test published demo
+        run: |
+          python build_pages.py
+          node --check web/pages-demo.js
+          node --check dist/app.js
+          node --test test_pages_demo.cjs
