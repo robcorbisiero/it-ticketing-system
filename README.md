@@ -1,5 +1,7 @@
 # Support Desk
 
+[![Support Desk checks](https://github.com/robcorbisiero/it-ticketing-system/actions/workflows/checks.yml/badge.svg)](https://github.com/robcorbisiero/it-ticketing-system/actions/workflows/checks.yml)
+
 A local IT ticketing system for practising help-desk intake, triage, assignment, resolution, and reopening. Python serves the web interface and a JSON API. SQLite stores tickets and their activity history. No third-party Python packages or cloud services are needed.
 
 ## Run locally
@@ -7,6 +9,8 @@ A local IT ticketing system for practising help-desk intake, triage, assignment,
 From this folder, run `python app.py` and open [Support Desk](http://127.0.0.1:8091). The application creates an empty `tickets.sqlite3` database on first launch. Use `--database` to specify a separate database file.
 
 ## 90-second portfolio demo
+
+[VPN incident walkthrough](docs/vpn-incident-walkthrough.md) shows how to triage, communicate, resolve, and reopen a fictional support ticket.
 
 Run `python app.py --demo --port 8092` and open [the demo](http://127.0.0.1:8092). Demo mode seeds a separate fictional database on its first run and offers three selectable accounts. The demo identities and credentials are intentionally public. This is a localhost demonstration of access rules. Real deployments need individual accounts and production authentication.
 
