@@ -38,3 +38,39 @@ test("static demo isolates requester views and resets fictional tickets", async 
   assert.equal((await request("analyst", "/tickets", "GET")).length, 3);
   assert.equal((await request("analyst", "/tickets/1", "GET")).status, "Open");
 });
+
+test("opening a different ticket clears both comment fields", () => {
+  const { readFileSync } = require("node:fs");
+  const vm = require("node:vm");
+  const path = require("node:path");
+  const form = {
+    elements: {
+      assignee: {},
+      note: { value: "Previous internal draft" },
+      reply: { value: "Previous public draft" },
+      status: { replaceChildren() {} },
+    },
+  };
+  const node = {
+    addEventListener() {},
+    replaceChildren() {},
+  };
+  const document = {
+    querySelector: (selector) => selector === "#detail-form" ? Object.assign(form, node) : node,
+    querySelectorAll: () => [],
+    addEventListener() {},
+    createElement: () => ({}),
+  };
+  const context = vm.createContext({
+    document,
+    fetch: () => new Promise(() => {}),
+    setInterval() {},
+  });
+  vm.runInContext(readFileSync(path.join(__dirname, "dist/app.js"), "utf8"), context);
+  vm.runInContext(`renderDetail({
+    id: 2, title: "Folder access", requester: "Noah", priority: "Low",
+    description: "Access request", assignee: "", status: "Open", sla: [], activity: [],
+  })`, context);
+  require("node:assert/strict").equal(form.elements.note.value, "");
+  require("node:assert/strict").equal(form.elements.reply.value, "");
+});
