@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support Desk</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><div class="shell brand"><span aria-hidden="true" class="mark"><i></i><i></i><i></i><i></i></span>Support Desk
+    <span id="viewer"></span><button id="sign-out" class="secondary" hidden>Switch account</button>
+  </div></header>
+  <main class="shell">
+    <div class="page-heading">
+      <div><h1>Ticket queue</h1><p>Track requests from intake to resolution.</p></div>
+      <button id="new-ticket">+ New ticket</button>
+    </div>
+    <div id="message" role="status"></div>
+    <section id="counts" aria-label="Ticket counts"></section>
+    <section class="panel" aria-labelledby="queue-heading">
+      <div class="toolbar"><div class="queue-label"><h2 id="queue-heading">Requests</h2><span id="result-count"></span></div>
+        <label>Search <input type="search" id="search" placeholder="Title, requester, or ticket ID"></label>
+        <label>Status <select id="filter"><option>All statuses</option><option>Open</option><option>In progress</option><option>Resolved</option></select></label>
+        <label>Sort <select id="sort"><option value="deadline">Next SLA deadline</option><option value="recent">Newest first</option></select></label>
+      </div>
+      <div class="scroller"><table>
+        <thead><tr><th scope="col">Ticket</th><th scope="col">Requester</th><th scope="col">Priority</th><th scope="col">Status</th><th scope="col">Assigned to</th><th scope="col">SLA</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <p id="empty" class="empty" hidden></p>
+    </section>
+  </main>
+  <dialog id="login-dialog" aria-labelledby="login-title">
+    <form id="login-form">
+      <h2 id="login-title">Explore the help desk</h2>
+      <p>Choose a fictional account. Analyst sees the entire queue. Maya and Noah see their own requests.</p>
+      <label>Demo account <select name="account"><option value="analyst">Analyst</option><option value="maya">Maya · Requester</option><option value="noah">Noah · Requester</option></select></label>
+      <p class="error" role="alert"></p>
+      <button type="submit">Open ticket queue</button>
+    </form>
+  </dialog>
+  <dialog id="create-dialog" aria-labelledby="create-title">
+    <form id="create-form">
+      <div class="dialog-heading"><h2 id="create-title">New ticket</h2><button type="button" class="secondary" data-close>Close</button></div>
+      <label>Title <input name="title" required maxlength="120"></label>
+      <label id="requester-field">Requester <input name="requester" required maxlength="100"></label>
+      <label>Priority <select name="priority"><option>Low</option><option selected>Medium</option><option>High</option><option>Urgent</option></select></label>
+      <label>Description <textarea name="description" required maxlength="2000" rows="4"></textarea></label>
+      <p class="error" role="alert"></p>
+      <button type="submit">Create ticket</button>
+    </form>
+  </dialog>
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <form id="detail-form">
+      <div class="dialog-heading"><h2 id="detail-title"></h2><button type="button" class="secondary" data-close>Close</button></div>
+      <div class="ticket-summary"><p id="ticket-meta"></p><p id="description"></p></div>
+      <ul id="deadlines" aria-label="Service deadlines"></ul>
+      <div id="analyst-controls">
+        <div class="pair">
+          <label>Assigned to <input name="assignee" maxlength="100" placeholder="Unassigned"></label>
+          <label>Status <select name="status"></select></label>
+        </div>
+        <label>Public reply <textarea name="reply" maxlength="1000" rows="2"></textarea></label>
+        <label>Internal work note <textarea name="note" maxlength="1000" rows="2"></textarea></label>
+        <p class="error" role="alert"></p>
+        <button type="submit">Save changes</button>
+      </div>
+      <h3>Activity</h3>
+      <ul id="activity"></ul>
+    </form>
+  </dialog>
+</body>
+</html>
