@@ -35,6 +35,7 @@ function slaBadge(state) {
 }
 
 async function api(path, method = "GET", data) {
+  if (globalThis.supportDeskDemo) return globalThis.supportDeskDemo.request(demoAccount, path, method, data);
   const headers = {};
   if (demoAccount) {
     headers.Authorization = "Basic " + btoa(demoAccount + ":desk-demo");
@@ -219,6 +220,15 @@ for (const button of document.querySelectorAll("[data-close]")) {
 $("#search").addEventListener("input", render);
 $("#filter").addEventListener("change", render);
 $("#sort").addEventListener("change", render);
+document.addEventListener("desk-demo-reset", () => {
+  $("#search").value = "";
+  $("#filter").selectedIndex = 0;
+  $("#sort").value = "deadline";
+  $("#create-form").reset();
+  $("#detail-form").reset();
+  $("#message").textContent = "Demo reset. The three sample tickets are restored.";
+  if (session) refresh();
+});
 onSubmit($("#create-form"), async (data) => {
   const created = await request("", "POST", data);
   $("#create-form").reset();

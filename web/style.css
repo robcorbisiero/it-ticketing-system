@@ -30,6 +30,11 @@ header {
 #viewer { margin-left: auto; font-size: .86rem; font-weight: 600; color: #dbe6ff; }
 .brand .secondary { background: #24344e; color: #f2f6ff; border-color: #455573; padding: 7px 12px; }
 .brand .secondary:hover { background: #324665; }
+.demo-notice { margin: 0 0 16px; padding: 11px 14px; border: 1px solid #cbdaf4; border-radius: 10px; background: #e4edff; color: #274675; }
+@media (max-width: 475px) {
+  .brand:has(#reset-demo) { flex-wrap: wrap; gap: 7px; padding-block: 10px; }
+  .brand:has(#reset-demo) .secondary { font-size: .78rem; padding-inline: 8px; }
+}
 main { padding: 30px 0 52px; }
 h1, h2, h3 { margin: 0; }
 h2 { font-size: 1.23rem; letter-spacing: -.03em; }

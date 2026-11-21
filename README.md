@@ -1,5 +1,7 @@
 # Support Desk
 
+**[Try the interactive demo](https://robcorbisiero.github.io/it-ticketing-system/)** · Choose Analyst, Maya, or Noah. Reset restores the fictional queue. All changes stay in your current browser page and disappear on refresh.
+
 [![Support Desk checks](https://github.com/robcorbisiero/it-ticketing-system/actions/workflows/checks.yml/badge.svg)](https://github.com/robcorbisiero/it-ticketing-system/actions/workflows/checks.yml)
 
 A local IT ticketing system for practising help-desk intake, triage, assignment, resolution, and reopening. Python serves the web interface and a JSON API. SQLite stores tickets and their activity history. No third-party Python packages or cloud services are needed.
